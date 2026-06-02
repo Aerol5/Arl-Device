@@ -9,8 +9,8 @@ import urllib.request
 from shutil import which
 
 CURRENT_VERSION = "1.0.0"
-VERSION_URL = "https://raw.githubusercontent.com/iyong-username/iyong-repo/main/version.txt"
-UPDATE_URL = "https://raw.githubusercontent.com/iyong-username/iyong-repo/main/main.py"
+VERSION_URL = "https://raw.githubusercontent.com/Aerol5/Arl-Device/refs/heads/main/version.txt"
+UPDATE_URL = "https://raw.githubusercontent.com/Aerol5/Arl-Device/refs/heads/main/main.py"
 
 app = tk.Tk()
 app.title("ARL")
@@ -28,6 +28,29 @@ if platform.system() == "Windows":
     os.environ["PATH"] = TOOLS_DIR + os.pathsep + os.environ.get("PATH", "")
 else:
     os.environ["PATH"] = TOOLS_DIR + os.pathsep + "/usr/local/bin:/usr/bin:/bin" + os.pathsep + os.environ.get("PATH", "")
+
+sky = tk.Canvas(app, width=500, height=120, bg="#000000", highlightthickness=0)
+sky.pack(pady=(10, 0))
+
+sky.create_oval(380, 20, 440, 80, fill="#fef08a", outline="") 
+sky.create_oval(365, 15, 425, 75, fill="#000000", outline="") 
+
+stars = []
+for _ in range(15):
+    x = random.randint(20, 480)
+    y = random.randint(10, 100)
+    if not (350 < x < 450 and 10 < y < 90):
+        star = sky.create_oval(x, y, x+3, y+3, fill="#ffffff", outline="")
+        stars.append(star)
+
+lbl_title = tk.Label(app, text="Arl", font=("Arial", 16, "bold"), fg="#ffffff", bg="#000000")
+lbl_title.pack(pady=(10, 5))
+
+lbl_sub = tk.Label(app, text="Arl Multi-Control", font=("Arial", 9), fg="#6b7280", bg="#000000")
+lbl_sub.pack(pady=(0, 5))
+
+lbl_status = tk.Label(app, text="Loading...", font=("Arial", 9, "italic"), fg="#94a3b8", bg="#000000")
+lbl_status.pack(pady=(0, 15))
 
 def check_for_updates():
     lbl_status.config(text="Checking for updates...", fg="#38bdf8")
@@ -133,20 +156,6 @@ def check_and_install_dependencies():
 
     lbl_status.config(text=f"System Ready v{CURRENT_VERSION} ✅", fg="#22c55e")
 
-sky = tk.Canvas(app, width=500, height=120, bg="#000000", highlightthickness=0)
-sky.pack(pady=(10, 0))
-
-sky.create_oval(380, 20, 440, 80, fill="#fef08a", outline="") 
-sky.create_oval(365, 15, 425, 75, fill="#000000", outline="") 
-
-stars = []
-for _ in range(15):
-    x = random.randint(20, 480)
-    y = random.randint(10, 100)
-    if not (350 < x < 450 and 10 < y < 90):
-        star = sky.create_oval(x, y, x+3, y+3, fill="#ffffff", outline="")
-        stars.append(star)
-
 def twinkle_stars():
     for star in stars:
         color = random.choice(["#ffffff", "#94a3b8", "#cbd5e1", "#e2e8f0", "#1e293b"])
@@ -218,15 +227,6 @@ def shut_down_all():
         os.system("taskkill /f /im scrcpy.exe")
     else:
         os.system("pkill scrcpy")
-
-lbl_title = tk.Label(app, text="Arl", font=("Arial", 16, "bold"), fg="#ffffff", bg="#000000")
-lbl_title.pack(pady=(10, 5))
-
-lbl_sub = tk.Label(app, text="Arl Multi-Control", font=("Arial", 9), fg="#6b7280", bg="#000000")
-lbl_sub.pack(pady=(0, 5))
-
-lbl_status = tk.Label(app, text="Loading...", font=("Arial", 9, "italic"), fg="#94a3b8", bg="#000000")
-lbl_status.pack(pady=(0, 15))
 
 btn_main = tk.Button(app, text="🚀 Open all", font=("Arial", 11, "bold"), 
                      bg="#ffffff", fg="#000000", activebackground="#e2e8f0", activeforeground="#000000",
