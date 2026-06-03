@@ -14,7 +14,7 @@ UPDATE_URL = "https://raw.githubusercontent.com/Aerol5/Arl-Device/refs/heads/mai
 
 app = tk.Tk()
 app.title("ARL")
-app.geometry("500x620")
+app.geometry("500x680")
 app.configure(bg="#000000")
 
 if platform.system() == "Windows":
@@ -46,7 +46,7 @@ for _ in range(15):
 lbl_title = tk.Label(app, text="Arl", font=("Arial", 16, "bold"), fg="#ffffff", bg="#000000")
 lbl_title.pack(pady=(10, 5))
 
-lbl_sub = tk.Label(app, text="Arl Multi-Control", font=("Arial", 9), fg="#6b7280", bg="#000000")
+lbl_sub = tk.Label(app, text="Arl Multi-Control & Keymapper", font=("Arial", 9), fg="#6b7280", bg="#000000")
 lbl_sub.pack(pady=(0, 5))
 
 lbl_status = tk.Label(app, text="Loading...", font=("Arial", 9, "italic"), fg="#94a3b8", bg="#000000")
@@ -87,73 +87,6 @@ def check_for_updates():
 def check_and_install_dependencies():
     if check_for_updates():
         return
-        
-    lbl_status.config(text="Checking system components...", fg="#fef08a")
-    app.update()
-    
-    os_type = platform.system()
-    
-    if os_type == "Linux":
-        needed = []
-        if not which("adb"): needed.append("adb")
-        if not which("scrcpy"): needed.append("scrcpy")
-        
-        if needed:
-            lbl_status.config(text="Installing missing tools via apt...", fg="#fef08a")
-            app.update()
-            try:
-                subprocess.run(["sudo", "apt", "update", "-y"], check=False)
-                subprocess.run(["sudo", "apt", "install", "-y"] + needed, check=True)
-            except:
-                pass
-
-    elif os_type == "Darwin":
-        needed_mac = []
-        if not which("adb"): needed_mac.append("android-platform-tools")
-        if not which("scrcpy"): needed_mac.append("scrcpy")
-        
-        if needed_mac:
-            lbl_status.config(text="Installing tools via Homebrew...", fg="#fef08a")
-            app.update()
-            try:
-                if not which("brew"):
-                    lbl_status.config(text="Please install Homebrew on Mac first!", fg="#ef4444")
-                    return
-                subprocess.run(["brew", "install"] + needed_mac, check=True)
-            except:
-                pass
-
-    elif os_type == "Windows":
-        adb_path = os.path.join(TOOLS_DIR, "adb.exe")
-        scrcpy_path = os.path.join(TOOLS_DIR, "scrcpy.exe")
-        
-        if not os.path.exists(adb_path) or not os.path.exists(scrcpy_path):
-            lbl_status.config(text="Downloading Windows tools (scrcpy/adb)...", fg="#fef08a")
-            app.update()
-            
-            zip_url = "https://github.com/Genymobile/scrcpy/releases/download/v2.4/scrcpy-win64-v2.4.zip"
-            zip_path = os.path.join(TOOLS_DIR, "scrcpy.zip")
-            
-            try:
-                urllib.request.urlretrieve(zip_url, zip_path)
-                lbl_status.config(text="Extracting tools...", fg="#fef08a")
-                app.update()
-                
-                with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                    for member in zip_ref.namelist():
-                        filename = os.path.basename(member)
-                        if not filename: continue
-                        source = zip_ref.open(member)
-                        target = open(os.path.join(TOOLS_DIR, filename), "wb")
-                        with source, target:
-                            target.write(source.read())
-                            
-                if os.path.exists(zip_path):
-                    os.remove(zip_path)
-            except:
-                lbl_status.config(text="Download failed! Check connection.", fg="#ef4444")
-                return
-
     lbl_status.config(text=f"System Ready v{CURRENT_VERSION} ✅", fg="#22c55e")
 
 def twinkle_stars():
@@ -175,12 +108,9 @@ def open_device():
     devices = get_devices()
     width, height = 280, 450
     start_x, start_y = 50, 50
-    adb_cmd = "adb.exe" if platform.system() == "Windows" else "adb"
     scrcpy_cmd = "scrcpy.exe" if platform.system() == "Windows" else "scrcpy"
 
     for index, serial in enumerate(devices):
-        subprocess.Popen(f'{adb_cmd} -s {serial} shell input keyevent 224', shell=True)
-        
         if index < 4:
             x_pos = start_x + (index * (width + 20))
             y_pos = start_y
@@ -188,39 +118,86 @@ def open_device():
             x_pos = start_x + ((index - 4) * (width + 20))
             y_pos = start_y + height + 50
             
-        cmd = f'{scrcpy_cmd} -s "{serial}" --always-on-top --mouse-bind=++++ --window-width={width} --window-height={height} --window-x={x_pos} --window-y={y_pos} &'
+        cmd = f'{scrcpy_cmd} -s "{serial}" --always-on-top --window-width={width} --window-height={height} --window-x={x_pos} --window-y={y_pos} &'
         if platform.system() == "Windows":
-            cmd = f'start /b {scrcpy_cmd} -s "{serial}" --always-on-top --mouse-bind=++++ --window-width={width} --window-height={height} --window-x={x_pos} --window-y={y_pos}'
+            cmd = f'start /b {scrcpy_cmd} -s "{serial}" --always-on-top --window-width={width} --window-height={height} --window-x={x_pos} --window-y={y_pos}'
         os.system(cmd)
+
+# --- 🎮 ADVANCED KEYMAPPER GAME CONTROLLER CODE ---
+def open_game_controller():
+    devices = get_devices()
+    if not devices:
+        lbl_status.config(text="No device detected for Controller! ❌", fg="#ef4444")
+        return
+
+    target_device = devices[0] # Kinokontrol ang unang device na nakasaksak
+    adb_cmd = "adb.exe" if platform.system() == "Windows" else "adb"
+
+    # Gawa ng bagong Window para sa Controller Input
+    game_win = tk.Toplevel(app)
+    game_win.title("ARL - Game Controller Mode")
+    game_win.geometry("400x300")
+    game_win.configure(bg="#111827")
+    
+    lbl_game = tk.Label(game_win, text="🎮 KEYMAPPER ACTIVE", font=("Arial", 14, "bold"), fg="#22c55e", bg="#111827")
+    lbl_game.pack(pady=20)
+
+    lbl_info = tk.Label(game_win, text="Keep this window focused!\n\nWASD = Move Around\nQ, E, R, F = Skills / Actions", 
+                        font=("Arial", 11), fg="#94a3b8", bg="#111827")
+    lbl_info.pack(pady=10)
+
+    # Coordinates para sa Joystick (Gitna: X=300, Y=800)
+    JOY_X, JOY_Y = 300, 800
+    DIST = 150 # Gaano kalayo ang hihilahin ng swipe para tumakbo
+
+    def send_cmd(args):
+        subprocess.Popen([adb_cmd, "-s", target_device] + args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    def on_key_press(event):
+        key = event.keysym.lower()
+        
+        # 🕹️ MOVEMENT (WASD mapped to swipe movements from center of joystick)
+        if key == 'w':   # Up
+            send_cmd(["shell", "input", "swipe", str(JOY_X), str(JOY_Y), str(JOY_X), str(JOY_Y - DIST), "100"])
+        elif key == 's': # Down
+            send_cmd(["shell", "input", "swipe", str(JOY_X), str(JOY_Y), str(JOY_X), str(JOY_Y + DIST), "100"])
+        elif key == 'a': # Left
+            send_cmd(["shell", "input", "swipe", str(JOY_X), str(JOY_Y), str(JOY_X - DIST), str(JOY_Y), "100"])
+        elif key == 'd': # Right
+            send_cmd(["shell", "input", "swipe", str(JOY_X), str(JOY_Y), str(JOY_X + DIST), str(JOY_Y), "100"])
+            
+        # ⚔️ SKILLS (Mapped to standard positions on the right side of the screen)
+        elif key == 'q': # Skill 1
+            send_cmd(["shell", "input", "tap", "1500", "850"])
+        elif key == 'e': # Skill 2
+            send_cmd(["shell", "input", "tap", "1650", "700"])
+        elif key == 'r': # Skill 3 / Ulti
+            send_cmd(["shell", "input", "tap", "1800", "550"])
+        elif key == 'f': # Attack / Basic Hit
+            send_cmd(["shell", "input", "tap", "1750", "850"])
+
+    game_win.bind("<KeyPress>", on_key_press)
+
+# --- END OF CONTROLLER CODE ---
 
 def open_single_device(num):
     devices = get_devices()
     index = num - 1
     if index < len(devices):
         serial = devices[index]
-        adb_cmd = "adb.exe" if platform.system() == "Windows" else "adb"
         scrcpy_cmd = "scrcpy.exe" if platform.system() == "Windows" else "scrcpy"
-        
-        subprocess.Popen(f'{adb_cmd} -s {serial} shell input keyevent 224', shell=True)
         width, height = 280, 450
-        start_x, start_y = 50, 50
+        x_pos, y_pos = 50, 50
         
-        if index < 4:
-            x_pos = start_x + (index * (width + 20))
-            y_pos = start_y
-        else:
-            x_pos = start_x + ((index - 4) * (width + 20))
-            y_pos = start_y + height + 50
-            
-        cmd = f'{scrcpy_cmd} -s "{serial}" --always-on-top --mouse-bind=++++ --window-width={width} --window-height={height} --window-x={x_pos} --window-y={y_pos} &'
+        cmd = f'{scrcpy_cmd} -s "{serial}" --always-on-top --window-width={width} --window-height={height} --window-x={x_pos} --window-y={y_pos} &'
         if platform.system() == "Windows":
-            cmd = f'start /b {scrcpy_cmd} -s "{serial}" --always-on-top --mouse-bind=++++ --window-width={width} --window-height={height} --window-x={x_pos} --window-y={y_pos}'
+            cmd = f'start /b {scrcpy_cmd} -s "{serial}" --always-on-top --window-width={width} --window-height={height} --window-x={x_pos} --window-y={y_pos}'
         os.system(cmd)
 
 def back_all():
     adb_cmd = "adb.exe" if platform.system() == "Windows" else "adb"
     for serial in get_devices():
-        subprocess.Popen(f'{adb_cmd} -s {serial} shell input keyevent 4', shell=True)
+        subprocess.Popen([adb_cmd, "-s", serial, "shell", "input", "keyevent", "4"])
 
 def shut_down_all():
     if platform.system() == "Windows":
@@ -228,10 +205,16 @@ def shut_down_all():
     else:
         os.system("pkill scrcpy")
 
-btn_main = tk.Button(app, text="🚀 Open all", font=("Arial", 11, "bold"), 
+btn_main = tk.Button(app, text="🚀 Open all Devices", font=("Arial", 11, "bold"), 
                      bg="#ffffff", fg="#000000", activebackground="#e2e8f0", activeforeground="#000000",
-                     bd=0, width=38, pady=12, command=open_device)
+                     bd=0, width=38, pady=10, command=open_device)
 btn_main.pack(pady=5)
+
+# Bagong Pindutan para sa Game Controller Mode
+btn_game = tk.Button(app, text="🎮 Open Game Controller", font=("Arial", 11, "bold"), 
+                     bg="#22c55e", fg="#ffffff", activebackground="#16a34a", activeforeground="#ffffff",
+                     bd=0, width=38, pady=10, command=open_game_controller)
+btn_game.pack(pady=5)
 
 frame_single = tk.Frame(app, bg="#000000")
 frame_single.pack(pady=10)
@@ -247,14 +230,15 @@ for i in range(1, 8):
 
 btn_back = tk.Button(app, text="Back All", font=("Arial", 11, "bold"), 
                      bg="#1f2937", fg="#ffffff", activebackground="#374151", activeforeground="#ffffff",
-                     bd=0, width=38, pady=12, command=back_all)
+                     bd=0, width=38, pady=10, command=back_all)
 btn_back.pack(pady=5)
 
 btn_close = tk.Button(app, text="🛑 Shut Down All", font=("Arial", 11, "bold"), 
                       bg="#000000", fg="#ef4444", activebackground="#ef4444", activeforeground="#ffffff",
-                      bd=1, relief="solid", width=38, pady=10, command=shut_down_all)
+                      bd=1, relief="solid", width=38, pady=8, command=shut_down_all)
 btn_close.pack(pady=15)
 
 twinkle_stars()
 app.after(100, check_and_install_dependencies)
+app.pack_propagate(False)
 app.mainloop()
