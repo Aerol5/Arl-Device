@@ -1,3 +1,4 @@
+cat << 'EOF' > /home/arl/main.py
 import tkinter as tk
 import subprocess
 import os
@@ -6,7 +7,7 @@ import platform
 import sys
 import urllib.request
 
-CURRENT_VERSION = "1.4.6"
+CURRENT_VERSION = "1.5.0"
 VERSION_URL = "https://raw.githubusercontent.com/Aerol5/Arl-Device/refs/heads/main/version.txt"
 UPDATE_URL = "https://raw.githubusercontent.com/Aerol5/Arl-Device/refs/heads/main/main.py"
 
@@ -161,7 +162,6 @@ def open_game_controller():
     lbl_bindings = tk.Label(game_win, text="🕹️ WASD: Move Around\n\n⚔️ KEYBINDINGS:\nL: Skill 1\nK: Skill 2\nJ: Skill 3\nO: Basic Attack ⚔️\n\n💥 UTILITIES:\nQ: Spell | E: Regen | B: Recall (TP)", font=("Arial", 10), fg="#94a3b8", bg="#111827", justify="left")
     lbl_bindings.pack(pady=10)
 
-    # RE-CALIBRATED MOVEMENT JOYSTICK FOR 1920x856
     JOY_X, JOY_Y = 230, 640  
     DIST = 100               
 
@@ -171,7 +171,6 @@ def open_game_controller():
     def on_key_press(event):
         key = str(event.keysym).lower()
         
-        # MOVEMENT (WASD)
         if key == 'w':   
             send_cmd(["shell", "input", "swipe", str(JOY_X), str(JOY_Y), str(JOY_X), str(JOY_Y - DIST), "70"])
         elif key == 's': 
@@ -181,27 +180,25 @@ def open_game_controller():
         elif key == 'd': 
             send_cmd(["shell", "input", "swipe", str(JOY_X), str(JOY_Y), str(JOY_X + DIST), str(JOY_Y), "70"])
             
-        # SKILLS POINTS FOR 1920x856 ASPECT RATIO
-        elif key == 'l':     # SKILL 1
+        elif key == 'l':     
             send_cmd(["shell", "input", "tap", "1430", "690"])
-        elif key == 'k':     # SKILL 2
+        elif key == 'k':     
             send_cmd(["shell", "input", "tap", "1540", "550"])
-        elif key == 'j':     # SKILL 3 / ULT
+        elif key == 'j':     
             send_cmd(["shell", "input", "tap", "1690", "430"])
-        elif key == 'o':     # BASIC ATTACK
+        elif key == 'o':     
             send_cmd(["shell", "input", "tap", "1680", "680"])
             
-        # UTILITIES (SPELL, REGEN, RECALL)
-        elif key == 'q':     # Battle Spell
+        elif key == 'q':     
             send_cmd(["shell", "input", "tap", "1260", "750"])
-        elif key == 'e':     # Regen
+        elif key == 'e':     
             send_cmd(["shell", "input", "tap", "1120", "750"])
-        elif key == 'b':     # Recall (TP)
+        elif key == 'b':     
             send_cmd(["shell", "input", "tap", "980", "750"])
 
     game_win.bind("<KeyPress>", on_key_press)
 
-# --- APP MAIN SCREEN LAYOUT ---
+# --- MAIN CONTROLS ---
 btn_main = tk.Button(app, text="🚀 Open Game Window (scrcpy)", font=("Arial", 11, "bold"), 
                      bg="#ffffff", fg="#000000", activebackground="#e2e8f0", activeforeground="#000000",
                      bd=0, width=38, pady=10, command=open_game_window_menu)
@@ -217,7 +214,6 @@ btn_game = tk.Button(app, text="🎮 Open Keymapper Window", font=("Arial", 11, 
                      bd=0, width=38, pady=8, command=open_game_controller)
 btn_game.pack(pady=5)
 
-# 1 TO 7 MAIN SCREEN DEVICES
 lbl_dev_section = tk.Label(app, text="📋 DEVICES LIST", font=("Arial", 10, "bold"), fg="#6b7280", bg="#000000")
 lbl_dev_section.pack(pady=(15, 5))
 
@@ -227,7 +223,6 @@ for i in range(1, 8):
                         bd=0, width=38, pady=4, command=lambda num=i: open_specific_device(num))
     btn_dev.pack(pady=2)
 
-# OPEN ALL DEVICES
 btn_all_devs = tk.Button(app, text="🌐 Open All Devices", font=("Arial", 11, "bold"), 
                         bg="#3b82f6", fg="#ffffff", activebackground="#2563eb", activeforeground="#ffffff",
                         bd=0, width=38, pady=8, command=open_all_devices)
@@ -237,3 +232,4 @@ twinkle_stars()
 app.after(100, check_and_install_dependencies)
 app.pack_propagate(False)
 app.mainloop()
+EOF
