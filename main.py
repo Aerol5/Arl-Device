@@ -6,7 +6,7 @@ import platform
 import sys
 import urllib.request
 
-CURRENT_VERSION = "1.4.5"
+CURRENT_VERSION = "1.4.6"
 VERSION_URL = "https://raw.githubusercontent.com/Aerol5/Arl-Device/refs/heads/main/version.txt"
 UPDATE_URL = "https://raw.githubusercontent.com/Aerol5/Arl-Device/refs/heads/main/main.py"
 
@@ -140,7 +140,7 @@ def shut_down_all():
         os.system("pkill scrcpy")
     lbl_status.config(text="All device windows closed 🛑", fg="#ef4444")
 
-# --- 🎮 RE-CALIBRATED KEYMAPPER ENGINE (TUMATAMA NA SA MGA SKILLS) ---
+# --- 🎮 RE-CALIBRATED KEYMAPPER ENGINE ---
 def open_game_controller():
     devices = get_devices()
     if not devices:
@@ -181,7 +181,7 @@ def open_game_controller():
         elif key == 'd': 
             send_cmd(["shell", "input", "swipe", str(JOY_X), str(JOY_Y), str(JOY_X + DIST), str(JOY_Y), "70"])
             
-        # SAKTONG REALIGNMENT PARA SA MGA SKILLS NG MLBB (1920x856 ASPECT RATIO)
+        # SKILLS POINTS FOR 1920x856 ASPECT RATIO
         elif key == 'l':     # SKILL 1
             send_cmd(["shell", "input", "tap", "1430", "690"])
         elif key == 'k':     # SKILL 2
@@ -201,7 +201,7 @@ def open_game_controller():
 
     game_win.bind("<KeyPress>", on_key_press)
 
-# --- APP MAIN SCREEN LAYOUT (HINDI GINALAW ANG MGA OPTIONS) ---
+# --- APP MAIN SCREEN LAYOUT ---
 btn_main = tk.Button(app, text="🚀 Open Game Window (scrcpy)", font=("Arial", 11, "bold"), 
                      bg="#ffffff", fg="#000000", activebackground="#e2e8f0", activeforeground="#000000",
                      bd=0, width=38, pady=10, command=open_game_window_menu)
