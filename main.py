@@ -6,7 +6,7 @@ import platform
 import sys
 import urllib.request
 
-CURRENT_VERSION = "1.0.8"
+CURRENT_VERSION = "1.1.0"
 VERSION_URL = "https://raw.githubusercontent.com/Aerol5/Arl-Device/refs/heads/main/version.txt"
 UPDATE_URL = "https://raw.githubusercontent.com/Aerol5/Arl-Device/refs/heads/main/main.py"
 
@@ -75,12 +75,10 @@ def twinkle_stars():
 
 lbl_title = tk.Label(app, text="Arl", font=("Arial", 16, "bold"), fg="#ffffff", bg="#000000")
 lbl_title.pack(pady=(10, 5))
-lbl_sub = tk.Label(app, text="ARL MLBB Custom Keymapper 1920x856 Fix", font=("Arial", 9), fg="#6b7280", bg="#000000")
-lbl_sub.pack(pady=(0, 5))
 lbl_status = tk.Label(app, text="Loading...", font=("Arial", 9, "italic"), fg="#94a3b8", bg="#000000")
 lbl_status.pack(pady=(0, 15))
 
-# --- ADB & SCRCPY FUNCTIONS ---
+# --- ADB & SCRCPY MULTI-DEVICE ENGINE ---
 def get_devices():
     try:
         cmd = "adb.exe" if platform.system() == "Windows" else "adb"
@@ -90,100 +88,69 @@ def get_devices():
     except:
         return []
 
+def launch_scrcpy(serial):
+    scrcpy_cmd = "scrcpy.exe" if platform.system() == "Windows" else "scrcpy"
+    cmd = f'{scrcpy_cmd} -s "{serial}" --always-on-top &'
+    if platform.system() == "Windows":
+        cmd = f'start /b {scrcpy_cmd} -s "{serial}" --always-on-top'
+    os.system(cmd)
+
 def open_device():
     devices = get_devices()
-    scrcpy_cmd = "scrcpy.exe" if platform.system() == "Windows" else "scrcpy"
-    for index, serial in enumerate(devices):
-        cmd = f'{scrcpy_cmd} -s "{serial}" --always-on-top --window-width=800 --window-height=450 &'
-        if platform.system() == "Windows":
-            cmd = f'start /b {scrcpy_cmd} -s "{serial}" --always-on-top --window-width=800 --window-height=450'
-        os.system(cmd)
+    if devices:
+        launch_scrcpy(devices[0]) # Bubuksan ang unang device na makikita
+    else:
+        lbl_status.config(text="No device detected! ❌", fg="#ef4444")
 
-# --- 🎮 CUSTOM MLBB CONTROLLER ENGINE ---
-def open_game_controller():
+def open_specific_device(index):
     devices = get_devices()
-    if not devices:
-        lbl_status.config(text="No device detected for Controller! ❌", fg="#ef4444")
-        return
+    if len(devices) >= index:
+        launch_scrcpy(devices[index - 1])
+    else:
+        lbl_status.config(text=f"Device {index} is not connected! ❌", fg="#ef4444")
 
-    target_device = devices[0]
-    adb_cmd = "adb.exe" if platform.system() == "Windows" else "adb"
+def open_all_devices():
+    devices = get_devices()
+    if devices:
+        for serial in devices:
+            launch_scrcpy(serial)
+        lbl_status.config(text=f"Opened {len(devices)} device(s) 🚀", fg="#22c55e")
+    else:
+        lbl_status.config(text="No devices detected to open! ❌", fg="#ef4444")
 
-    game_win = tk.Toplevel(app)
-    game_win.title("ARL - Custom MLBB Controller v1.0.8")
-    game_win.geometry("450x420")
-    game_win.configure(bg="#111827")
-    
-    lbl_game = tk.Label(game_win, text="🎮 ARL CUSTOM KEYMAPPER", font=("Arial", 14, "bold"), fg="#22c55e", bg="#111827")
-    lbl_game.pack(pady=10)
-
-    lbl_info = tk.Label(game_win, text="Profile: 1920x856 Resolution Mode 🦅", font=("Arial", 11, "bold"), fg="#fef08a", bg="#111827")
-    lbl_info.pack(pady=5)
-
-    lbl_bindings = tk.Label(game_win, text="🕹️ WASD: Move Around\n\n⚔️ SKILLS:\nL: Skill 1 (Unang Skill)\nK: Skill 2 (Ikalawang Skill)\nJ: Skill 3 (Ultimate)\n\n💥 UTILITIES:\nQ: Battle Spell | E: Regen | R: Recall\nF: Basic Attack (Hataw)", font=("Arial", 10), fg="#94a3b8", bg="#111827", justify="left")
-    lbl_bindings.pack(pady=10)
-
-    # 🕹️ Virtual Joystick Coordinates para sa 1920x856
-    JOY_X, JOY_Y = 270, 630  
-    DIST = 120               
-
-    def send_cmd(args):
-        subprocess.Popen([adb_cmd, "-s", target_device] + args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-    def on_key_press(event):
-        key = str(event.keysym).lower()
-        
-        # 🏃 MOVEMENT (WASD)
-        if key == 'w':   
-            send_cmd(["shell", "input", "swipe", str(JOY_X), str(JOY_Y), str(JOY_X), str(JOY_Y - DIST), "80"])
-        elif key == 's': 
-            send_cmd(["shell", "input", "swipe", str(JOY_X), str(JOY_Y), str(JOY_X), str(JOY_Y + DIST), "80"])
-        elif key == 'a': 
-            send_cmd(["shell", "input", "swipe", str(JOY_X), str(JOY_Y), str(JOY_X - DIST), str(JOY_Y), "80"])
-        elif key == 'd': 
-            send_cmd(["shell", "input", "swipe", str(JOY_X), str(JOY_Y), str(JOY_X + DIST), str(JOY_Y), "80"])
-            
-        # ⚔️ EXACT SKILLS MAPPING FOR 1920x856
-        elif key == 'l':     # Skill 1
-            send_cmd(["shell", "input", "tap", "1540", "720"])
-        elif key == 'k':     # Skill 2
-            send_cmd(["shell", "input", "tap", "1650", "590"])
-        elif key == 'j':     # Skill 3 / Ultimate
-            send_cmd(["shell", "input", "tap", "1790", "440"])
-            
-        # 💥 EXACT UTILITY MAPPING FOR 1920x856
-        elif key == 'q':     # Battle Spell / Flicker
-            send_cmd(["shell", "input", "tap", "1360", "790"])
-        elif key == 'e':     # Regen
-            send_cmd(["shell", "input", "tap", "1220", "790"])
-        elif key == 'r':     # Recall
-            send_cmd(["shell", "input", "tap", "1090", "790"])
-        elif key == 'f':     # Basic Attack
-            send_cmd(["shell", "input", "tap", "1765", "735"])
-
-    game_win.bind("<KeyPress>", on_key_press)
-
-# --- APP SYSTEM CONTROLS ---
 def shut_down_all():
     if platform.system() == "Windows":
         os.system("taskkill /f /im scrcpy.exe")
     else:
         os.system("pkill scrcpy")
+    lbl_status.config(text="All device windows closed 🛑", fg="#ef4444")
 
+# --- APP SYSTEM CONTROLS ---
 btn_main = tk.Button(app, text="🚀 Open Game Window (scrcpy)", font=("Arial", 11, "bold"), 
                      bg="#ffffff", fg="#000000", activebackground="#e2e8f0", activeforeground="#000000",
                      bd=0, width=38, pady=10, command=open_device)
 btn_main.pack(pady=5)
 
-btn_game = tk.Button(app, text="🎮 Open Game Controller", font=("Arial", 11, "bold"), 
-                     bg="#22c55e", fg="#ffffff", activebackground="#16a34a", activeforeground="#ffffff",
-                     bd=0, width=38, pady=10, command=open_game_controller)
-btn_game.pack(pady=5)
-
-btn_close = tk.Button(app, text="🛑 Shut Down Game Tools", font=("Arial", 11, "bold"), 
+btn_close = tk.Button(app, text="🛑 Shut Down All Devices", font=("Arial", 11, "bold"), 
                       bg="#000000", fg="#ef4444", activebackground="#ef4444", activeforeground="#ffffff",
                       bd=1, relief="solid", width=38, pady=8, command=shut_down_all)
-btn_close.pack(pady=15)
+btn_close.pack(pady=10)
+
+# --- 1 TO 7 DEVICE OPTIONS ---
+lbl_dev_section = tk.Label(app, text="📋 SELECT DEVICE TO OPEN:", font=("Arial", 10, "bold"), fg="#6b7280", bg="#000000")
+lbl_dev_section.pack(pady=(15, 5))
+
+for i in range(1, 8):
+    btn_dev = tk.Button(app, text=f"📱 Device {i}", font=("Arial", 10), 
+                        bg="#111827", fg="#cbd5e1", activebackground="#1f2937", activeforeground="#ffffff",
+                        bd=0, width=38, pady=5, command=lambda num=i: open_specific_device(num))
+    btn_dev.pack(pady=2)
+
+# --- OPEN ALL DEVICES OPTION ---
+btn_all_devs = tk.Button(app, text="🌐 Open All Devices", font=("Arial", 11, "bold"), 
+                        bg="#22c55e", fg="#ffffff", activebackground="#16a34a", activeforeground="#ffffff",
+                        bd=0, width=38, pady=8, command=open_all_devices)
+btn_all_devs.pack(pady=15)
 
 twinkle_stars()
 app.after(100, check_and_install_dependencies)
