@@ -1,4 +1,3 @@
-cat << 'EOF' > /home/arl/main.py
 import tkinter as tk
 import subprocess
 import os
