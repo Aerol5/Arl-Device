@@ -6,7 +6,7 @@ import platform
 import sys
 import urllib.request
 
-CURRENT_VERSION = "1.0.6"
+CURRENT_VERSION = "1.0.8"
 VERSION_URL = "https://raw.githubusercontent.com/Aerol5/Arl-Device/refs/heads/main/version.txt"
 UPDATE_URL = "https://raw.githubusercontent.com/Aerol5/Arl-Device/refs/heads/main/main.py"
 
@@ -75,7 +75,7 @@ def twinkle_stars():
 
 lbl_title = tk.Label(app, text="Arl", font=("Arial", 16, "bold"), fg="#ffffff", bg="#000000")
 lbl_title.pack(pady=(10, 5))
-lbl_sub = tk.Label(app, text="ARL MLBB Custom Keymapper", font=("Arial", 9), fg="#6b7280", bg="#000000")
+lbl_sub = tk.Label(app, text="ARL MLBB Custom Keymapper 1920x856 Fix", font=("Arial", 9), fg="#6b7280", bg="#000000")
 lbl_sub.pack(pady=(0, 5))
 lbl_status = tk.Label(app, text="Loading...", font=("Arial", 9, "italic"), fg="#94a3b8", bg="#000000")
 lbl_status.pack(pady=(0, 15))
@@ -110,28 +110,28 @@ def open_game_controller():
     adb_cmd = "adb.exe" if platform.system() == "Windows" else "adb"
 
     game_win = tk.Toplevel(app)
-    game_win.title("ARL - Custom MLBB Controller")
+    game_win.title("ARL - Custom MLBB Controller v1.0.8")
     game_win.geometry("450x420")
     game_win.configure(bg="#111827")
     
     lbl_game = tk.Label(game_win, text="🎮 ARL CUSTOM KEYMAPPER", font=("Arial", 14, "bold"), fg="#22c55e", bg="#111827")
     lbl_game.pack(pady=10)
 
-    lbl_info = tk.Label(game_win, text="Profile: Kaja Full Combo Mode 🦅", font=("Arial", 11, "bold"), fg="#fef08a", bg="#111827")
+    lbl_info = tk.Label(game_win, text="Profile: 1920x856 Resolution Mode 🦅", font=("Arial", 11, "bold"), fg="#fef08a", bg="#111827")
     lbl_info.pack(pady=5)
 
-    lbl_bindings = tk.Label(game_win, text="🕹️ WASD: Move Around\n\n⚔️ SKILLS:\nL: Skill 1 (First Skill)\nK: Skill 2 (Second Skill)\nJ: Skill 3 (Ultimate/Divine Judgment)\n\n💥 UTILITIES:\nQ: Battle Spell (Flicker/Execute)\nE: Regen\nR: Recall\nF: Basic Attack (Hataw)", font=("Arial", 10), fg="#94a3b8", bg="#111827", justify="left")
+    lbl_bindings = tk.Label(game_win, text="🕹️ WASD: Move Around\n\n⚔️ SKILLS:\nL: Skill 1 (Unang Skill)\nK: Skill 2 (Ikalawang Skill)\nJ: Skill 3 (Ultimate)\n\n💥 UTILITIES:\nQ: Battle Spell | E: Regen | R: Recall\nF: Basic Attack (Hataw)", font=("Arial", 10), fg="#94a3b8", bg="#111827", justify="left")
     lbl_bindings.pack(pady=10)
 
-    # Coordinates batay sa screen ng phone mo sa scrcpy window
-    JOY_X, JOY_Y = 350, 800  
-    DIST = 160               
+    # 🕹️ Virtual Joystick Coordinates para sa 1920x856
+    JOY_X, JOY_Y = 270, 630  
+    DIST = 120               
 
     def send_cmd(args):
         subprocess.Popen([adb_cmd, "-s", target_device] + args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     def on_key_press(event):
-        key = event.keysym.lower()
+        key = str(event.keysym).lower()
         
         # 🏃 MOVEMENT (WASD)
         if key == 'w':   
@@ -143,23 +143,23 @@ def open_game_controller():
         elif key == 'd': 
             send_cmd(["shell", "input", "swipe", str(JOY_X), str(JOY_Y), str(JOY_X + DIST), str(JOY_Y), "80"])
             
-        # ⚔️ SKILLS SET
+        # ⚔️ EXACT SKILLS MAPPING FOR 1920x856
         elif key == 'l':     # Skill 1
-            send_cmd(["shell", "input", "tap", "1550", "820"])
+            send_cmd(["shell", "input", "tap", "1540", "720"])
         elif key == 'k':     # Skill 2
-            send_cmd(["shell", "input", "tap", "1700", "700"])
-        elif key == 'j':     # Skill 3 / Ulti
-            send_cmd(["shell", "input", "tap", "1850", "520"])
+            send_cmd(["shell", "input", "tap", "1650", "590"])
+        elif key == 'j':     # Skill 3 / Ultimate
+            send_cmd(["shell", "input", "tap", "1790", "440"])
             
-        # 💥 UTILITY BUTTONS (Q, E, R, F)
-        elif key == 'q':     # Battle Spell
-            send_cmd(["shell", "input", "tap", "1380", "920"])
+        # 💥 EXACT UTILITY MAPPING FOR 1920x856
+        elif key == 'q':     # Battle Spell / Flicker
+            send_cmd(["shell", "input", "tap", "1360", "790"])
         elif key == 'e':     # Regen
-            send_cmd(["shell", "input", "tap", "1250", "920"])
+            send_cmd(["shell", "input", "tap", "1220", "790"])
         elif key == 'r':     # Recall
-            send_cmd(["shell", "input", "tap", "1120", "920"])
+            send_cmd(["shell", "input", "tap", "1090", "790"])
         elif key == 'f':     # Basic Attack
-            send_cmd(["shell", "input", "tap", "1800", "850"])
+            send_cmd(["shell", "input", "tap", "1765", "735"])
 
     game_win.bind("<KeyPress>", on_key_press)
 
