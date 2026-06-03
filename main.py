@@ -4,54 +4,15 @@ import os
 import random
 import platform
 import sys
-import urllib.request
 
 CURRENT_VERSION = "1.5.0"
-VERSION_URL = "https://raw.githubusercontent.com/Aerol5/Arl-Device/refs/heads/main/version.txt"
-UPDATE_URL = "https://raw.githubusercontent.com/Aerol5/Arl-Device/refs/heads/main/main.py"
 
 app = tk.Tk()
 app.title("ARL")
-app.geometry("500x650")
+app.geometry("500x600")
 app.configure(bg="#000000")
 
-# --- AUTO UPDATE ENGINE ---
-def check_for_updates():
-    lbl_status.config(text="Checking for updates...", fg="#38bdf8")
-    app.update()
-    try:
-        req = urllib.request.Request(VERSION_URL, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=5) as response:
-            latest_version = response.read().decode('utf-8').strip()
-            
-        if latest_version != CURRENT_VERSION:
-            lbl_status.config(text=f"Updating to v{latest_version}...", fg="#fef08a")
-            app.update()
-            
-            current_script = os.path.abspath(sys.argv[0])
-            backup_script = current_script + ".bak"
-            
-            if os.path.exists(backup_script):
-                os.remove(backup_script)
-            os.rename(current_script, backup_script)
-            
-            req_update = urllib.request.Request(UPDATE_URL, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req_update, timeout=10) as response_file:
-                with open(current_script, "wb") as f:
-                    f.write(response_file.read())
-            
-            lbl_status.config(text="Update complete! Restarting...", fg="#22c55e")
-            app.update()
-            app.after(2000, lambda: os.execv(sys.executable, ['python'] + sys.argv))
-            return True
-    except:
-        pass
-    return False
-
-def check_and_install_dependencies():
-    if check_for_updates():
-        return
-    lbl_status.config(text=f"System Ready v{CURRENT_VERSION} ✅", fg="#22c55e")
+lbl_status = tk.Label(app, text=f"System Ready v{CURRENT_VERSION} ✅", font=("Arial", 9, "italic"), fg="#22c55e", bg="#000000")
 
 # --- UI DESIGN ELEMENTS ---
 sky = tk.Canvas(app, width=500, height=120, bg="#000000", highlightthickness=0)
@@ -75,7 +36,6 @@ def twinkle_stars():
 
 lbl_title = tk.Label(app, text="Arl", font=("Arial", 16, "bold"), fg="#ffffff", bg="#000000")
 lbl_title.pack(pady=(10, 5))
-lbl_status = tk.Label(app, text="Loading...", font=("Arial", 9, "italic"), fg="#94a3b8", bg="#000000")
 lbl_status.pack(pady=(0, 15))
 
 # --- ADB & SCRCPY MULTI-DEVICE ENGINE ---
@@ -103,7 +63,6 @@ def open_specific_device(index):
     else:
         lbl_status.config(text=f"Device {index} is not connected! ❌", fg="#ef4444")
 
-# POP-UP MENU PARA SA GAME WINDOW BUTTON
 def open_game_window_menu():
     devices = get_devices()
     if not devices:
@@ -140,67 +99,6 @@ def shut_down_all():
         os.system("pkill scrcpy")
     lbl_status.config(text="All device windows closed 🛑", fg="#ef4444")
 
-# --- 🎮 RE-CALIBRATED KEYMAPPER ENGINE ---
-def open_game_controller():
-    devices = get_devices()
-    if not devices:
-        lbl_status.config(text="No device detected for Keymapper! ❌", fg="#ef4444")
-        return
-
-    target_device = devices[0]
-    adb_cmd = "adb.exe" if platform.system() == "Windows" else "adb"
-
-    game_win = tk.Toplevel(app)
-    game_win.title("ARL - Fixed Controller")
-    game_win.geometry("400x380")
-    game_win.configure(bg="#111827")
-    
-    lbl_game = tk.Label(game_win, text="🎮 KEYMAPPER CALIBRATED", font=("Arial", 12, "bold"), fg="#22c55e", bg="#111827")
-    lbl_game.pack(pady=10)
-
-    lbl_bindings = tk.Label(game_win, text="🕹️ WASD: Move Around\n\n⚔️ KEYBINDINGS:\nL: Skill 1\nK: Skill 2\nJ: Skill 3\nO: Basic Attack ⚔️\n\n💥 UTILITIES:\nQ: Spell | E: Regen | B: Recall (TP)", font=("Arial", 10), fg="#94a3b8", bg="#111827", justify="left")
-    lbl_bindings.pack(pady=10)
-
-    # RE-CALIBRATED MOVEMENT JOYSTICK FOR 1920x856
-    JOY_X, JOY_Y = 230, 640  
-    DIST = 100               
-
-    def send_cmd(args):
-        subprocess.Popen([adb_cmd, "-s", target_device] + args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-    def on_key_press(event):
-        key = str(event.keysym).lower()
-        
-        # MOVEMENT (WASD)
-        if key == 'w':   
-            send_cmd(["shell", "input", "swipe", str(JOY_X), str(JOY_Y), str(JOY_X), str(JOY_Y - DIST), "70"])
-        elif key == 's': 
-            send_cmd(["shell", "input", "swipe", str(JOY_X), str(JOY_Y), str(JOY_X), str(JOY_Y + DIST), "70"])
-        elif key == 'a': 
-            send_cmd(["shell", "input", "swipe", str(JOY_X), str(JOY_Y), str(JOY_X - DIST), str(JOY_Y), "70"])
-        elif key == 'd': 
-            send_cmd(["shell", "input", "swipe", str(JOY_X), str(JOY_Y), str(JOY_X + DIST), str(JOY_Y), "70"])
-            
-        # SKILLS POINTS FOR 1920x856 ASPECT RATIO
-        elif key == 'l':     # SKILL 1
-            send_cmd(["shell", "input", "tap", "1430", "690"])
-        elif key == 'k':     # SKILL 2
-            send_cmd(["shell", "input", "tap", "1540", "550"])
-        elif key == 'j':     # SKILL 3 / ULT
-            send_cmd(["shell", "input", "tap", "1690", "430"])
-        elif key == 'o':     # BASIC ATTACK
-            send_cmd(["shell", "input", "tap", "1680", "680"])
-            
-        # UTILITIES (SPELL, REGEN, RECALL)
-        elif key == 'q':     # Battle Spell
-            send_cmd(["shell", "input", "tap", "1260", "750"])
-        elif key == 'e':     # Regen
-            send_cmd(["shell", "input", "tap", "1120", "750"])
-        elif key == 'b':     # Recall (TP)
-            send_cmd(["shell", "input", "tap", "980", "750"])
-
-    game_win.bind("<KeyPress>", on_key_press)
-
 # --- APP MAIN SCREEN LAYOUT ---
 btn_main = tk.Button(app, text="🚀 Open Game Window (scrcpy)", font=("Arial", 11, "bold"), 
                      bg="#ffffff", fg="#000000", activebackground="#e2e8f0", activeforeground="#000000",
@@ -211,11 +109,6 @@ btn_close = tk.Button(app, text="🛑 Shut Down All Devices", font=("Arial", 11,
                       bg="#000000", fg="#ef4444", activebackground="#ef4444", activeforeground="#ffffff",
                       bd=1, relief="solid", width=38, pady=8, command=shut_down_all)
 btn_close.pack(pady=5)
-
-btn_game = tk.Button(app, text="🎮 Open Keymapper Window", font=("Arial", 11, "bold"), 
-                     bg="#22c55e", fg="#ffffff", activebackground="#16a34a", activeforeground="#ffffff",
-                     bd=0, width=38, pady=8, command=open_game_controller)
-btn_game.pack(pady=5)
 
 # 1 TO 7 MAIN SCREEN DEVICES
 lbl_dev_section = tk.Label(app, text="📋 DEVICES LIST", font=("Arial", 10, "bold"), fg="#6b7280", bg="#000000")
@@ -234,6 +127,5 @@ btn_all_devs = tk.Button(app, text="🌐 Open All Devices", font=("Arial", 11, "
 btn_all_devs.pack(pady=10)
 
 twinkle_stars()
-app.after(100, check_and_install_dependencies)
 app.pack_propagate(False)
 app.mainloop()
