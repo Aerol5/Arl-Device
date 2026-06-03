@@ -8,7 +8,7 @@ import zipfile
 import urllib.request
 from shutil import which
 
-CURRENT_VERSION = "1.0.0"
+CURRENT_VERSION = "1.0.1"
 VERSION_URL = "https://raw.githubusercontent.com/Aerol5/Arl-Device/refs/heads/main/version.txt"
 UPDATE_URL = "https://raw.githubusercontent.com/Aerol5/Arl-Device/refs/heads/main/main.py"
 
